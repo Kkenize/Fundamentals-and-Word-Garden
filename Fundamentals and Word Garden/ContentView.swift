@@ -5,74 +5,146 @@
 //  Created by Zhejun Zhang on 2/9/25.
 //
 
+//Below are contents for Fundamentals Layout
+//import SwiftUI
+//
+//struct ContentView: View {
+//    @State private var messageString = ""
+//    
+//    var body: some View {
+//        GeometryReader { geometry in
+//            //        This is for setting background colors
+//            //        ZStack {
+//            //            Color.skyBlue
+//            //                .ignoresSafeArea(edges: .all)
+//            
+//            VStack {
+//                Text("You have skills!")
+//                    .font(.largeTitle)
+//                    .fontWeight(.black)
+//                    .foregroundStyle(.white)
+//                    .padding()
+////                    .frame(width: .infinity)
+//                    .background(.skyBlue)
+//                    .clipShape(RoundedRectangle(cornerRadius: 40))
+//                
+//                Spacer()
+//                
+//                Text(messageString)
+//                    .font(.largeTitle)
+//                    .fontWeight(.heavy)
+//                    .minimumScaleFactor(0.5)
+//                    .multilineTextAlignment(.center)
+//                    .foregroundStyle(.red)
+//                    .frame(height: 150)
+//                    .frame(maxWidth: .infinity)
+//                    .padding()
+//                //                .frame(width: 300, height: 150)
+//                //                    .border(.orange, width: 2)
+//                
+//                Spacer()
+//                Spacer()
+//                Spacer()
+//                
+//                Divider()
+//                    .background(.gray)
+//                    .frame(width: geometry.size.width, height: 1)
+//                
+//                
+//                HStack {
+//                    Button("Awesome") {
+//                        messageString = "You are awesome!"
+//                    }
+//                    
+//                    Spacer()
+//                    
+//                    Button("Great") {
+//                        messageString = "You are great!"
+//                    }
+//                }
+//                .buttonStyle(.borderedProminent)
+//                .padding()
+//                
+//// Sets the bottom safe area to skyBlue
+//                Rectangle()
+//                    .frame(height: 0)
+//                    .background(.skyBlue)
+//                
+//            }
+//            .padding()
+//            .background(Gradient(colors: [.skyBlue, .green]))
+//            //        }
+//        }
+//    }
+//}
+
+//Below are contents for Fundamentals Two Way Bindings
 import SwiftUI
 
 struct ContentView: View {
-    @State private var messageString = ""
+    @State private var count = 0
+    @State private var toggleIsOn = true
+    @State private var textEntered = ""
+    @State private var colorSelected: Color = .red
+    @State private var dateSelected = Date()
+    @State private var stepperNumber = 1
+    @State private var sliderNumber = 50.0
     
     var body: some View {
-        GeometryReader { geometry in
-            //        This is for setting background colors
-            //        ZStack {
-            //            Color.skyBlue
-            //                .ignoresSafeArea(edges: .all)
+        VStack {
             
-            VStack {
-                Text("You have skills!")
-                    .font(.largeTitle)
-                    .fontWeight(.black)
-                    .foregroundStyle(.white)
-                    .padding()
-//                    .frame(width: .infinity)
-                    .background(.skyBlue)
-                    .clipShape(RoundedRectangle(cornerRadius: 40))
-                
-                Spacer()
-                
-                Text(messageString)
-                    .font(.largeTitle)
-                    .fontWeight(.heavy)
-                    .minimumScaleFactor(0.5)
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(.red)
-                    .frame(height: 150)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                //                .frame(width: 300, height: 150)
-                //                    .border(.orange, width: 2)
-                
-                Spacer()
-                Spacer()
-                Spacer()
-                
-                Divider()
-                    .background(.gray)
-                    .frame(width: geometry.size.width, height: 1)
-                
-                
-                HStack {
-                    Button("Awesome") {
-                        messageString = "You are awesome!"
-                    }
-                    
-                    Spacer()
-                    
-                    Button("Great") {
-                        messageString = "You are great!"
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                .padding()
-                
-// Sets the bottom safe area to skyBlue
-                Rectangle()
-                    .frame(height: 0)
-                    .background(.skyBlue)
-                
+            Spacer()
+            Spacer()
+            
+            Text("Press Count: \(count)")
+                .font(.title2)
+            
+            Button("Add One") {
+                count += 1
             }
-            .padding()
-            .background(Gradient(colors: [.skyBlue, .green]))
-            //        }
+            .buttonStyle(.borderedProminent)
+            .font(.title2)
+            
+            Spacer()
+            
+            TextField("Enter a name:", text: $textEntered)
+                .textFieldStyle(.roundedBorder)
+            Text("Name Entered: \(textEntered)")
+            
+            Spacer()
+            
+            Toggle("Toggle is \(toggleIsOn ? "on" : "off"):", isOn: $toggleIsOn)
+            
+            Spacer()
+            
+            Rectangle()
+                .fill(colorSelected)
+                .frame(width: .infinity, height: 10)
+            ColorPicker("Please select a color:", selection: $colorSelected)
+            
+            Spacer()
+            
+            DatePicker("Please select a date:", selection: $dateSelected)
+            Text("Selected date is: \(dateSelected.formatted(date: .abbreviated, time: .shortened))")
+            
+            Spacer()
+            
+            Stepper("Stepper value: \(stepperNumber)", value: $stepperNumber, in: 1...10)
+            
+            Spacer()
+            
+            Slider(value: $sliderNumber, in: 0...100) {
+                //Accessibility Code
+            } minimumValueLabel: {
+                Image(systemName: "speaker.minus")
+                Text("0")
+            } maximumValueLabel: {
+                Image(systemName: "speaker.plus")
+                Text("100")
+            }
+            Text("Slider value is: \(String(format:"%.1f", sliderNumber))%")
+            
+            Spacer()
         }
     }
 }
