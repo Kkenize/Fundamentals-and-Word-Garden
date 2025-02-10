@@ -217,7 +217,7 @@ struct ContentView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.mint)
-            }
+            } 
             Spacer()
             
             Image(imageName)
