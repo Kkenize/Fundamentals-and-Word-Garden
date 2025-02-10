@@ -158,6 +158,7 @@ struct ContentView: View {
     @State private var wordsToGuess = ["SWIFT","DOG","CAT"]
     @State private var gameMessage = "How Many Guesses To Cover The Hidden Words?"
     @State private var currentWord = 0
+    @State private var blankSpaces = "_ _ _ _ _"
     @State private var guessedLetter = ""
     @State private var imageName = "flower8"
     @State private var playAgainHidden = true
@@ -183,8 +184,10 @@ struct ContentView: View {
                 .multilineTextAlignment(.center)
                 .padding()
             
-            Text("_ _ _ _ _")
+//            blankSpaces = "_" + String(repeating: " _", count: wordsToGuess[currentWord].count-1)
+            Text(blankSpaces)
                 .font(.title)
+//            blankSpaces = ""
             if playAgainHidden {
                 HStack {
                     TextField("", text: $guessedLetter)
@@ -217,7 +220,7 @@ struct ContentView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.mint)
-            } 
+            }
             Spacer()
             
             Image(imageName)
