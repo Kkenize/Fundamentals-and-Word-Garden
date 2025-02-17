@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  ContentView .swift
 //  Fundamentals Two
 //
 //  Created by Zhejun Zhang on 2/9/25.
@@ -151,19 +151,26 @@
 
 //Below are contents for the word garden app
 import SwiftUI
+import AVFAudio
 
 struct ContentView: View {
+    @State private static var maximumGuesses = 8
     @State private var wordsGuessed = 0
     @State private var wordsMissed = 0
-    @State private var wordsToGuess = ["SWIFT","DOG","CAT"]
     @State private var gameMessage = "How Many Guesses To Cover The Hidden Words?"
-    @State private var currentWord = 0
-    @State private var blankSpaces = "_ _ _ _ _"
+    @State private var currentWordIndex = 0
+    @State private var wordToGuess = ""
+    @State private var revealedWord = ""
     @State private var guessedLetter = ""
+    @State private var lettersGuessed = ""
+    @State private var guessesRemaining = maximumGuesses
     @State private var imageName = "flower8"
     @State private var playAgainHidden = true
+    @State private var playAgainButtonLabel = "Another Word?"
+    @State private var audioPlayer : AVAudioPlayer!
     @FocusState private var textFieldFocus: Bool
-    
+    private let wordsToGuess = ["SWIFT","DOG","CAT"]
+      
     var body: some View {
         VStack {
             HStack {
@@ -182,11 +189,15 @@ struct ContentView: View {
             Text(gameMessage)
                 .font(.title)
                 .multilineTextAlignment(.center)
+                .frame(height: 100)
+                .minimumScaleFactor(0.5)
                 .padding()
             
-//            blankSpaces = "_" + String(repeating: " _", count: wordsToGuess[currentWord].count-1)
-            Text(blankSpaces)
+//            blankSpaces = "_" + String(repeating: " _", count: wordsToGuess[currentWordIndex].count-1)
+            
+            Text(revealedWord)
                 .font(.title)
+            
 //            blankSpaces = ""
             if playAgainHidden {
                 HStack {
@@ -207,28 +218,117 @@ struct ContentView: View {
                             guessedLetter = String(lastChar).uppercased()
                         }
                         .focused($textFieldFocus)
+                        .onSubmit {
+                            guard guessedLetter != "" else { return }
+                            guessALetter()
+                            updateGameplay()
+                        }
+                    
                     Button("Guess a letter!") {
-                        textFieldFocus = false
+                        guessALetter()
+                        updateGameplay()
                     }
                     .buttonStyle(.bordered)
                     .tint(.mint)
                     .disabled(guessedLetter.isEmpty)
                 }
             } else {
-                Button("Another Word?") {
+                Button(playAgainButtonLabel) {
+                    if currentWordIndex == wordToGuess.count {
+                        currentWordIndex = 0
+                        wordsGuessed = 0
+                        wordsMissed = 0
+                        playAgainButtonLabel = "Another Word?"
+                    }
                     
+                    wordToGuess = wordsToGuess[currentWordIndex]
+                    
+                    revealedWord = "_" + String(repeating: " _", count: wordToGuess.count-1)
+                    lettersGuessed = ""
+                    guessesRemaining = Self.maximumGuesses
+                    imageName = "flower\(guessesRemaining)"
+                    gameMessage = "How Many Guesses To Cover The Hidden Words?"
+                    playAgainHidden = true
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.mint)
             }
+            
             Spacer()
             
             Image(imageName)
                 .resizable()
                 .scaledToFit()
+                .animation(.easeIn(duration: 0.75), value: imageName)
         }
         .ignoresSafeArea(edges:.bottom)
+        .onAppear {
+            wordToGuess = wordsToGuess[currentWordIndex]
+            revealedWord = "_" + String(repeating: " _", count: wordToGuess.count-1)
+        }
+    }
+    
+    func guessALetter() {
+        textFieldFocus = false
+        lettersGuessed = lettersGuessed + guessedLetter
+        revealedWord = wordToGuess.map {
+            letter in lettersGuessed.contains(letter) ? "\(letter)" : "_"
+        }.joined(separator: " ")
+    }
+    
+    func updateGameplay() {
+        if !wordToGuess.contains(guessedLetter) {
+            guessesRemaining -= 1
+            imageName = "wilt\(guessesRemaining)"
+            
+            playSound(soundName: "incorrect")
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
+                imageName = "flower\(guessesRemaining)"
+            }
+        } else {
+            playSound(soundName: "correct")
+        }
         
+        if !revealedWord.contains("_") {
+            gameMessage = "You've guessed it! It Took You \(lettersGuessed.count) Guesses to Guess the Word."
+            wordsGuessed += 1
+            currentWordIndex += 1
+            playAgainHidden = false
+            playSound(soundName: "word-guessed")
+        } else if guessesRemaining == 0 {
+            gameMessage = "So Sorry, You're All Out of Guesses!"
+            wordsGuessed += 1
+            currentWordIndex += 1
+            playAgainHidden = false
+            playSound(soundName: "word-not-guessed")
+        } else {
+            gameMessage = "You've Made \(lettersGuessed.count) Guess\(lettersGuessed.count == 1 ? "" : "es")"
+        }
+        
+        if currentWordIndex == wordsToGuess.count {
+            playAgainButtonLabel = "Restart Game?"
+            gameMessage = gameMessage + "\nYou're Tried All of the Words. Restart from beginning?"
+        }
+        
+        guessedLetter = ""
+    }
+    
+    func playSound(soundName: String) {
+        if audioPlayer != nil && audioPlayer.isPlaying {
+            audioPlayer.stop()
+        }
+        guard let soundFile = NSDataAsset(name: soundName) else {
+            print("Can't find \(soundName)")
+            return
+        }
+        do {
+            audioPlayer = try AVAudioPlayer(data: soundFile.data)
+            audioPlayer.play()
+        } catch {
+            print("\(error.localizedDescription)")
+            return
+        }
     }
 }
 
